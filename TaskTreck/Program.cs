@@ -1,6 +1,8 @@
 using Contracts;
+using Entities.Exceptions;
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using NLog;
 using TaskTreck.Extensions;
 
@@ -20,6 +22,23 @@ builder.Services.ConfigureSwagger();
 builder.Services.AddProblemDetails(opt =>
 {
     opt.ExceptionDetailsPropertyName = "ExceptionDetails";
+    opt.IncludeExceptionDetails = (ctx, ex) => builder.Environment.IsDevelopment() || builder.Environment.IsStaging();
+    opt.Map<NotFoundException>(exception => new ProblemDetails
+    {
+        Title = exception.Title,
+        Detail = exception.Detail,
+        Status = StatusCodes.Status500InternalServerError,
+        Type = exception.Type,
+        Instance = exception.Instance
+    });
+    opt.Map<BadRequestException>(exception => new ProblemDetails
+    {
+        Title = exception.Title,
+        Detail = exception.Detail,
+        Status = StatusCodes.Status500InternalServerError,
+        Type = exception.Type,
+        Instance = exception.Instance
+    });
 });
 
 builder.Services.AddControllers()
