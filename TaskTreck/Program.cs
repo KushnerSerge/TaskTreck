@@ -1,4 +1,5 @@
 using Contracts;
+using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.HttpOverrides;
 using NLog;
 using TaskTreck.Extensions;
@@ -16,18 +17,21 @@ builder.Services.ConfigureSqlContext(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.ConfigureSwagger();
 
+builder.Services.AddProblemDetails(opt =>
+{
+    opt.ExceptionDetailsPropertyName = "ExceptionDetails";
+});
+
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(TaskTreck.Presentation.AssemblyReference).Assembly);
 
 var app = builder.Build();
 
-var logger = app.Services.GetRequiredService<ILoggerManager>(); 
-app.ConfigureExceptionHandler(logger);
-
 
 if (app.Environment.IsProduction())
     app.UseHsts();
 
+app.UseProblemDetails();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseForwardedHeaders(new ForwardedHeadersOptions
