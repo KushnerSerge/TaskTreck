@@ -35,8 +35,10 @@ public class GlobalExceptionHandler : IExceptionHandler
                 Detail = message,
                 Title = exception.GetType().Name,
                 Status = (int)HttpStatusCode.InternalServerError,
+                Instance = exception.Message,
             },
             Exception = exception
         });
     }
 }
+    
